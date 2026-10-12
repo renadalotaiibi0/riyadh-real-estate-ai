@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import joblib
 import os
-import streamlit.components.v1 as components
 
 st.set_page_config(
     page_title="Riyadh Real Estate Price Prediction & Investment Advisor",
@@ -11,15 +10,8 @@ st.set_page_config(
     layout="wide"
 )
 
-# Force scroll to top on load
-components.html(
-    """
-    <script>
-        window.parent.document.querySelector('section.main').scrollTo(0, 0);
-    </script>
-    """,
-    height=0
-)
+# Top anchor to force view from top
+top_anchor = st.empty()
 
 # Load Model and Data Safely
 @st.cache_resource
