@@ -157,5 +157,4 @@ if user_input := st.chat_input("اسأل المستشار (مثال: ما هي �
 
         response_placeholder.write(reply)
         st.session_state.messages.append({"role": "assistant", "content": reply}
-    })
-    st.dataframe(sample_df)
+    
