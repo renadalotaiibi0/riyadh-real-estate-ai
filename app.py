@@ -121,7 +121,7 @@ predict_btn = st.sidebar.button("🔮 Predict Price & Trends")
 st.title("🏡 Riyadh Real Estate Price Prediction & Investment Advisor")
 st.markdown("An advanced Machine Learning portfolio project for analyzing, predicting property prices, and forecasting market trends in Riyadh.")
 
-# Calculation Logic
+# Calculation Logic (Growth rate increased by 5%)
 def calculate_realistic_predictions():
     price_range = district_prices.get(district, {"Land": (4275, 6175), "Villa": (4275, 6175), "Apartment": (3610, 5035), "Building": (4275, 6175)})
     min_m2, max_m2 = price_range.get(property_type, (4275, 6175))
@@ -133,7 +133,9 @@ def calculate_realistic_predictions():
         estimated_price = (area * base_m2_price) + (bedrooms * 38000) + (bathrooms * 23750) - (property_age * 17000)
     
     estimated_price = max(estimated_price, 285000)
-    growth_rate = 0.040 if region in ["North", "Central"] else 0.030
+    
+    # Increased growth rate by 5% (4% -> 4.2%, 3% -> 3.15%)
+    growth_rate = 0.042 if region in ["North", "Central"] else 0.0315
     projected_price = estimated_price * (1 + growth_rate)
     diff = projected_price - estimated_price
 
@@ -153,7 +155,7 @@ with col1:
 with col2:
     st.markdown("*📈 Projected Price (Next 1 Year)*")
     st.header(f"{proj_price:,.0f} SAR")
-    st.markdown(f"<span style='color: #28a745; font-weight: bold;'>▲ +{price_diff:,.0f} SAR ({growth*100:.1f}%)</span>", unsafe_allow_html=True)
+    st.markdown(f"<span style='color: #28a745; font-weight: bold;'>▲ +{price_diff:,.0f} SAR ({growth*100:.2f}%)</span>", unsafe_allow_html=True)
 
 with col3:
     st.markdown("*📍 Location & Type*")
@@ -167,7 +169,7 @@ st.markdown("*Investment Rating:* 🔥 High Growth Potential (Prime Investment)"
 st.info(f"Properties in *{district}* ({region} Riyadh) demonstrate robust pricing based on recent market transactions, excellent neighborhood services, and strong investor demand.")
 
 # ==========================================
-# PHASE 3: STABLE FORM-BASED LLM ADVISOR (Starts from top)
+# PHASE 3: STABLE FORM-BASED LLM ADVISOR
 # ==========================================
 st.markdown("---")
 st.subheader("🤖 LLM Real Estate Advisor")
@@ -181,7 +183,6 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Using a standard form instead of st.chat_input to prevent auto-scroll to bottom on load
 with st.form(key="chat_form", clear_on_submit=True):
     user_query = st.text_input("اكتب سؤالك هنا / Ask a question...")
     submit_button = st.form_submit_button(label="🚀 إرسال / Send")
@@ -192,7 +193,6 @@ if submit_button and user_query:
     query_lower = user_query.lower()
     is_arabic = any('\u0600' <= char <= '\u06FF' for char in user_query)
     
-    # Regional Queries Matching
     if "جنوب" in query_lower or "south" in query_lower:
         if is_arabic:
             llm_response = "*أحياء جنوب الرياض (الشفاء، العزيزية، الدار البيضاء):*\nتقدم خيارات اقتصادية بأسعار متر تتراوح بين 2,185 إلى 3,705 ريال/م² للأراضي، مع عائد إيجاري ممتاز ومستقر للباحثين عن الاستثمار منخفض التكلفة."
@@ -200,9 +200,9 @@ if submit_button and user_query:
             llm_response = "*South Riyadh (Al-Shifa, Al-Aziziyah, Al-Dar El Beida):*\nOffers economical options with land prices from 2,185 to 3,705 SAR/m², ideal for steady rental yields at a lower entry cost."
     elif "شمال" in query_lower or "north" in query_lower:
         if is_arabic:
-            llm_response = "*أحياء شمال الرياض (حطين، الملقا، النرجس، العارض):*\nتعتبر أعلى مناطق الرياض نمواً بنسبة نمو سنوي متوقعة 4%. أسعار المتر تتراوح بين 4,275 إلى 14,725 ريال/م² حسب الحي ونوع العقار."
+            llm_response = "*أحياء شمال الرياض (حطين، الملقا، النرجس، العارض):*\nتعتبر أعلى مناطق الرياض نمواً بنسبة نمو سنوي متوقعة 4.2%. أسعار المتر تتراوح بين 4,275 إلى 14,725 ريال/م² حسب الحي ونوع العقار."
         else:
-            llm_response = "*North Riyadh (Hittin, Al-Malqa, Al-Narjis, Al-Aarid):*\nLeads market appreciation with 4% annual expected growth. Prices range from 4,275 to 14,725 SAR/m² depending on district and type."
+            llm_response = "*North Riyadh (Hittin, Al-Malqa, Al-Narjis, Al-Aarid):*\nLeads market appreciation with 4.2% annual expected growth. Prices range from 4,275 to 14,725 SAR/m² depending on district and type."
     elif "شرق" in query_lower or "east" in query_lower:
         if is_arabic:
             llm_response = "*أحياء شرق الرياض (المونسية، إشبيليا، القادسية):*\nتتميز بنشاط عمراني مرتفع، بمتوسط سعر متر للأراضي بين 4,370 إلى 7,410 ريال/م²، وتعتبر ممتازة للتطوير السكني والإيجارات."
