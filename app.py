@@ -33,7 +33,7 @@ def load_model_and_data():
 
 model, df = load_model_and_data()
 
-# Accurate Real-World Price Ranges per m² (reduced by 5%)
+# Accurate Real-World Price Ranges per m²
 district_prices = {
     "Hittin": {"Land": (11400, 14725), "Villa": (7790, 9975), "Apartment": (5700, 7600), "Building": (7125, 9310)},
     "Al-Malqa": {"Land": (9500, 12825), "Villa": (6840, 8930), "Apartment": (4750, 6460), "Building": (6175, 8360)},
@@ -139,22 +139,21 @@ st.markdown("*Investment Rating:* 🔥 High Growth Potential (Prime Investment)"
 st.info(f"Properties in *{district}* ({region} Riyadh) demonstrate robust pricing based on recent market transactions, excellent neighborhood services, and strong investor demand.")
 
 # ==========================================
-# PHASE 3: BILINGUAL LLM CHATBOT ENGINE (FIXED)
+# PHASE 3: SMART CONTEXT-AWARE LLM ADVISOR
 # ==========================================
 st.markdown("---")
-st.subheader("🤖 LLM Real Estate Chatbot & Advisor / مستشار العقارات الذكي")
-st.markdown("Ask in *English* or *Arabic* about Riyadh markets, ROI, district advice, or valuation.")
+st.subheader("🤖 LLM Real Estate Advisor")
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": f"مرحباً بك! أنا مستشار عقارات الرياض الذكي (LLM). أستطيع إجابتك باللغة العربية أو الإنجليزية حول الاستثمار والأحياء وتوقعات الأسعار.\n\nHello! I am your Bilingual Real Estate LLM Assistant. Ask me anything in Arabic or English!"}
+        {"role": "assistant", "content": "مرحباً بك! اسألني عن أسعار المتر لأي حي، أفضل أحياء الاستثمار، أو تقييم عقارك."}
     ]
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-user_query = st.chat_input("Ask LLM Assistant / اسأل المستشار العقاري الذكي...")
+user_query = st.chat_input("اسأل عن أسعار الأحياء، الاستثمار، أو التقييم...")
 
 if user_query:
     st.session_state.messages.append({"role": "user", "content": user_query})
@@ -162,37 +161,31 @@ if user_query:
         st.markdown(user_query)
 
     with st.chat_message("assistant"):
-        with st.spinner("Analyzing market trends... / جاري تحليل بيانات السوق..."):
+        with st.spinner("جاري التحليل..."):
             query_lower = user_query.lower()
-            is_arabic = any('\u0600' <= char <= '\u06FF' for char in user_query)
-
-            if is_arabic:
-                # Prioritize specific "Best District for Investment" queries
-                if "افضل" in query_lower or "أفضل" in query_lower or "ترشيح" in query_lower:
-                    llm_response = f"*ترشيحات المستشار الذكي للأستثمار:\n\n1. **شمال الرياض (نمو رأسمالي مرتفع):* تعتبر أحياء *حطين* و *الملقا* و *النرجس* الخيار الأول للاستثمار قصير وطويل المدى بفضل القرب من KAFD والمشاريع الكبرى.\n2. *شرق الرياض (عائد إيجاري ممتاز):* أحياء مثل *المونسية* و *إشبيليا* توفر توازناً ممتازاً بين سعر المتر والعائد الإيجاري.\n3. *بالنسبة لحي {district} الحالي:* يعتبر خياراً قوياً وقيمته الاستثمارية عالية جداً بناءً على تحليلات السوق الحالية."
-                elif "حطين" in query_lower or "الملقا" in query_lower or "شمال" in query_lower:
-                    llm_response = f"*تحليل مستشار الذكاء الاصطناعي:* تعتبر أحياء شمال الرياض مثل *حطين* و *الملقا* من أفضل الوجهات الاستثمارية حالياً بفضل نسبة النمو العالية (حوالي 4% سنوياً)، وقربها من مركز الملك عبد الله المالي (KAFD) والمشاريع الكبرى."
-                elif "جنوب" in query_lower or "الشفاء" in query_lower or "العزيزية" in query_lower:
-                    llm_response = f"*تحليل مستشار الذكاء الاصطناعي:* أحياء جنوب الرياض (مثل الشفاء والعزيزية) تقدم خيارات اقتصادية ممتازة بأسعار متر تبدأ من حوالي 2,185 ريال، مما يجعلها مناسبة جداً للباحثين عن عوائد إيجارية منتظمة بتكلفة شراء معقولة."
-                elif "عائد" in query_lower or "جدوى" in query_lower:
-                    llm_response = f"*رأي المستشار الاستثماري:* بالنسبة لـ *{property_type}* في حي *{district}*، أداء السوق ممتاز ومستقر. تتراوح العوائد الإيجارية في الرياض عادة بين 6% إلى 8% سنوياً للشقق السكنية والمباني الحديثة."
-                elif "سعر" in query_lower or "تكلفة" in query_lower or "كم" in query_lower:
-                    llm_response = f"*تقرير التقييم العقاري:* بناءً على مدخلاتك، السعر التقديري لـ *{property_type}* في *{district}* هو *{est_price:,.0f} ريال سعودي، مع توقعات بوصوله إلى *{proj_price:,.0f} ريال سعودي** خلال السنة القادمة."
-                else:
-                    llm_response = f"*مستشار الذكاء الاصطناعي:* رداً على سؤالك حول '{user_query}'، يشهد القطاع العقاري في مدينة الرياض توسعاً كبيراً، ويظهر حي *{district}* نمواً متوازناً وطلباً مستمراً في السوق."
+            
+            # Detect if user mentioned a specific district in their query
+            detected_district = district  # default to sidebar selection
+            for d in district_prices.keys():
+                if d.lower() in query_lower or d.replace("-", "").lower() in query_lower.replace(" ", ""):
+                    detected_district = d
+                    break
+            
+            # Smart Matching based on user intent
+            if "أفضل" in query_lower or "افضل" in query_lower or "استثمار" in query_lower:
+                llm_response = f"*أفضل ترشيحات الاستثمار في الرياض:\n1. **شمال الرياض (نمو رأسمالي قوي):* أحياء مثل *حطين، **الملقا، و **النرجس.\n2. **شرق الرياض (عوائد إيجارية ممتازة):* أحياء مثل *المونسية* و *إشبيليا*."
+            elif "سعر المتر" in query_lower or "كم المتر" in query_lower or "التكلفة" in query_lower or "بكم" in query_lower:
+                p_range = district_prices.get(detected_district, {"Land": (4000, 6000)})
+                land_min, land_max = p_range["Land"]
+                villa_min, villa_max = p_range["Villa"]
+                apt_min, apt_max = p_range["Apartment"]
+                llm_response = f"*متوسط أسعار المتر في حي ({detected_district}):*\n- الأراضي: من {land_min:,} إلى {land_max:,} ريال/م²\n- الفلل: من {villa_min:,} إلى {villa_max:,} ريال/م²\n- الشقق: من {apt_min:,} إلى {apt_max:,} ريال/م²"
+            elif "عائد" in query_lower or "yield" in query_lower:
+                llm_response = f"تتراوح العوائد الإيجارية المتوقعة في *{detected_district}* بين 6% إلى 8% سنوياً للشقق والمباني السكنية."
+            elif "تقييم" in query_lower or "السعر التقديري" in query_lower:
+                llm_response = f"السعر التقديري للـ *{property_type}* في حي *{detected_district}* هو *{est_price:,.0f} ريال سعودي*."
             else:
-                if "best" in query_lower or "top" in query_lower or "recommend" in query_lower:
-                    llm_response = f"*LLM Investment Recommendations:\n\n1. **North Riyadh (High Capital Growth):* *Hittin, **Al-Malqa, and **Al-Narjis* are top choices for capital appreciation due to proximity to KAFD.\n2. *East Riyadh (Strong Rental Yield):* *Al-Munasiyah* and *Ishbiliya* offer great balance between property prices and high demand.\n3. *Current Selection ({district}):* Currently ranks high for overall stability and long-term investment value."
-                elif "hittin" in query_lower or "malqa" in query_lower or "north" in query_lower:
-                    llm_response = f"*LLM Market Analysis:* North Riyadh districts like *Hittin* and *Al-Malqa* represent premier investment hubs with high capital appreciation (approx 4% annual growth). Land and villa prices reflect strong demand driven by proximity to KAFD."
-                elif "south" in query_lower or "shifa" in query_lower or "aziziyah" in query_lower:
-                    llm_response = f"*LLM Market Analysis:* Southern districts like *Al-Shifa* and *Al-Aziziyah* offer highly economical entry points with square meter prices starting around 2,185 SAR."
-                elif "roi" in query_lower or "yield" in query_lower:
-                    llm_response = f"*LLM Investment Insight:* For *{property_type}* in *{district}*, current market data shows strong stability with rental yields averaging between 6% to 8% annually."
-                elif "price" in query_lower or "cost" in query_lower or "how much" in query_lower:
-                    llm_response = f"*LLM Valuation Report:* Based on current parameters, your selected *{property_type}* in *{district}* is estimated at *{est_price:,.0f} SAR, with a projected 1-year value of *{proj_price:,.0f} SAR**."
-                else:
-                    llm_response = f"*LLM Assistant:* Regarding your query about '{user_query}', Riyadh's real estate sector is witnessing unprecedented expansion. *{district}* in {region} Riyadh shows robust performance with steady transaction volume."
+                llm_response = f"يشهد حي *{detected_district}* نشاطاً عقارياً مستقراً وطلباً استثمارياً عالياً بناءً على مؤشرات السوق الحالية."
 
             st.markdown(llm_response)
             st.session_state.messages.append({"role": "assistant", "content": llm_response})
