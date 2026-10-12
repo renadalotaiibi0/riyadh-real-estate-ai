@@ -36,13 +36,13 @@ def load_model_and_data():
 
 model, df = load_model_and_data()
 
-# Accurate Real-World Price Ranges per m²
+# Calibrated Price Ranges per m² (Realistic Benchmark)
 district_prices = {
     "Hittin": {"Land": (11400, 14725), "Villa": (7790, 9975), "Apartment": (5700, 7600), "Building": (7125, 9310)},
     "Al-Malqa": {"Land": (9500, 12825), "Villa": (6840, 8930), "Apartment": (4750, 6460), "Building": (6175, 8360)},
     "As-Sahafah": {"Land": (11400, 13775), "Villa": (6460, 8075), "Apartment": (4560, 6080), "Building": (5700, 7600)},
     "Al-Yasmin": {"Land": (6840, 9025), "Villa": (5225, 6840), "Apartment": (4180, 5510), "Building": (4750, 6460)},
-    "Al-Narjis": {"Land": (5890, 8075), "Villa": (4750, 6175), "Apartment": (3610, 5035), "Building": (4275, 5700)},
+    "Al-Narjis": {"Land": (5890, 8075), "Villa": (4750, 6175), "Apartment": (3800, 5200), "Building": (4275, 5700)},
     "Al-Aarid": {"Land": (4275, 5890), "Villa": (3990, 5035), "Apartment": (3325, 4560), "Building": (3610, 4750)},
     "Al-Nakheel": {"Land": (8550, 11875), "Villa": (6460, 7410), "Apartment": (4750, 6080), "Building": (5700, 7125)},
     "Al-Munasiyah": {"Land": (5700, 7410), "Villa": (4180, 5225), "Apartment": (3135, 4370), "Building": (3990, 5035)},
@@ -108,12 +108,13 @@ if property_type == "Land":
     bathrooms = 0
     property_age = 0
 else:
-    min_area = 120 if property_type == "Apartment" else (250 if property_type == "Villa" else 500)
+    min_area = 100 if property_type == "Apartment" else (250 if property_type == "Villa" else 500)
     max_area = 500 if property_type == "Apartment" else 1500
-    area = st.sidebar.slider("Property Area (m²):", min_area, max_area, 350)
-    bedrooms = st.sidebar.slider("Bedrooms:", 1, 10, 4)
-    bathrooms = st.sidebar.slider("Bathrooms:", 1, 10, 4)
-    property_age = st.sidebar.slider("Property Age (Years):", 0, 30, 3)
+    default_area = 150 if property_type == "Apartment" else 350
+    area = st.sidebar.slider("Property Area (m²):", min_area, max_area, default_area)
+    bedrooms = st.sidebar.slider("Bedrooms:", 1, 10, 2 if property_type == "Apartment" else 4)
+    bathrooms = st.sidebar.slider("Bathrooms:", 1, 10, 2 if property_type == "Apartment" else 4)
+    property_age = st.sidebar.slider("Property Age (Years):", 0, 30, 2)
 
 predict_btn = st.sidebar.button("🔮 Predict Price & Trends")
 
@@ -121,35 +122,70 @@ predict_btn = st.sidebar.button("🔮 Predict Price & Trends")
 st.title("🏡 Riyadh Real Estate Price Prediction & Investment Advisor")
 st.markdown("An advanced Machine Learning portfolio project for analyzing, predicting property prices, and forecasting market trends in Riyadh.")
 
-# Calculation Logic (Growth rate increased by an extra 4%: 4.2% -> 8.2%, 3.15% -> 7.15%)
-def calculate_realistic_predictions():
-    price_range = district_prices.get(district, {"Land": (4275, 6175), "Villa": (4275, 6175), "Apartment": (3610, 5035), "Building": (4275, 6175)})
-    min_m2, max_m2 = price_range.get(property_type, (4275, 6175))
+# Realistic Calculation Logic (3.5% - 4.5% Annual Growth)
+def calculate_realistic_predictions(p_type, p_region, p_district, p_area, p_bed, p_bath, p_age):
+    price_range = district_prices.get(p_district, {"Land": (4275, 6175), "Villa": (4275, 6175), "Apartment": (3610, 5035), "Building": (4275, 6175)})
+    min_m2, max_m2 = price_range.get(p_type, (4275, 6175))
     base_m2_price = (min_m2 + max_m2) / 2
     
-    if property_type == "Land":
-        estimated_price = area * base_m2_price
+    if p_type == "Land":
+        estimated_price = p_area * base_m2_price
+    elif p_type == "Apartment":
+        estimated_price = (p_area * base_m2_price) + (p_bed * 15000) + (p_bath * 10000) - (p_age * 8000)
     else:
-        estimated_price = (area * base_m2_price) + (bedrooms * 38000) + (bathrooms * 23750) - (property_age * 17000)
+        estimated_price = (p_area * base_m2_price) + (p_bed * 35000) + (p_bath * 20000) - (p_age * 15000)
     
-    estimated_price = max(estimated_price, 285000)
+    estimated_price = max(estimated_price, 250000)
     
-    # Growth rate: 8.2% for North/Central, 7.15% for others
-    growth_rate = 0.082 if region in ["North", "Central"] else 0.0715
+    # Realistic annual market growth rate (4.2% for North/Central, 3.2% for others)
+    growth_rate = 0.042 if p_region in ["North", "Central"] else 0.032
     projected_price = estimated_price * (1 + growth_rate)
     diff = projected_price - estimated_price
 
     return estimated_price, projected_price, diff, growth_rate
 
-st.success(f"✨ Analysis for *{property_type}* in *{district}* Completed Successfully!")
+# Initialize prediction state so values only update when button is clicked
+if "prediction_data" not in st.session_state:
+    st.session_state.prediction_data = {
+        "p_type": property_type,
+        "p_region": region,
+        "p_district": district,
+        "p_area": area,
+        "p_bed": bedrooms,
+        "p_bath": bathrooms,
+        "p_age": property_age
+    }
 
-est_price, proj_price, price_diff, growth = calculate_realistic_predictions()
+if predict_btn:
+    st.session_state.prediction_data = {
+        "p_type": property_type,
+        "p_region": region,
+        "p_district": district,
+        "p_area": area,
+        "p_bed": bedrooms,
+        "p_bath": bathrooms,
+        "p_age": property_age
+    }
+
+# Compute predictions based ONLY on saved button trigger state
+active_data = st.session_state.prediction_data
+est_price, proj_price, price_diff, growth = calculate_realistic_predictions(
+    active_data["p_type"],
+    active_data["p_region"],
+    active_data["p_district"],
+    active_data["p_area"],
+    active_data["p_bed"],
+    active_data["p_bath"],
+    active_data["p_age"]
+)
+
+st.success(f"✨ Analysis for *{active_data['p_type']}* in *{active_data['p_district']}* Completed Successfully!")
 
 # Metrics Layout (3 Columns)
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.markdown(f"*💰 Estimated {property_type} Price*")
+    st.markdown(f"*💰 Estimated {active_data['p_type']} Price*")
     st.header(f"{est_price:,.0f} SAR")
 
 with col2:
@@ -159,14 +195,14 @@ with col2:
 
 with col3:
     st.markdown("*📍 Location & Type*")
-    st.header(f"{district} ({property_type})")
+    st.header(f"{active_data['p_district']} ({active_data['p_type']})")
 
 st.markdown("---")
 
 # Insights Section
 st.subheader("💡 AI Investment Advisor Insights")
 st.markdown("*Investment Rating:* 🔥 High Growth Potential (Prime Investment)")
-st.info(f"Properties in *{district}* ({region} Riyadh) demonstrate robust pricing based on recent market transactions, excellent neighborhood services, and strong investor demand.")
+st.info(f"Properties in *{active_data['p_district']}* ({active_data['p_region']} Riyadh) demonstrate robust pricing based on recent market transactions, excellent neighborhood services, and strong investor demand.")
 
 # ==========================================
 # PHASE 3: STABLE FORM-BASED LLM ADVISOR
@@ -195,14 +231,14 @@ if submit_button and user_query:
     
     if "جنوب" in query_lower or "south" in query_lower:
         if is_arabic:
-            llm_response = "*أحياء جنوب الرياض (الشفاء، العزيزية، الدار البيضاء):*\nتقدم خيارات اقتصادية بأسعار متر تتراوح بين 2,185 إلى 3,705 ريال/م² للأراضي، مع عائد إيجاري ممتاز ومستقر للباحثين عن الاستثمار منخفض التكلفة."
+            llm_response = "*أحياء جنوب الرياض (الشفاء، العزيزية، الدار البيضاء):*\n تقدم خيارات اقتصادية بأسعار متر تتراوح بين 2,185 إلى 3,705 ريال/م² للأراضي، مع عائد إيجاري ممتاز ومستقر للباحثين عن الاستثمار منخفض التكلفة."
         else:
             llm_response = "*South Riyadh (Al-Shifa, Al-Aziziyah, Al-Dar El Beida):*\nOffers economical options with land prices from 2,185 to 3,705 SAR/m², ideal for steady rental yields at a lower entry cost."
     elif "شمال" in query_lower or "north" in query_lower:
         if is_arabic:
-            llm_response = "*أحياء شمال الرياض (حطين، الملقا، النرجس، العارض):*\nتعتبر أعلى مناطق الرياض نمواً بنسبة نمو سنوي متوقعة 8.2%. أسعار المتر تتراوح بين 4,275 إلى 14,725 ريال/م² حسب الحي ونوع العقار."
+            llm_response = "*أحياء شمال الرياض (حطين، الملقا، النرجس، العارض):*\nتعتبر أعلى مناطق الرياض نمواً بنسبة نمو سنوي متوقعة ~4.2%. أسعار المتر تتراوح بين 4,275 إلى 14,725 ريال/م² حسب الحي ونوع العقار."
         else:
-            llm_response = "*North Riyadh (Hittin, Al-Malqa, Al-Narjis, Al-Aarid):*\nLeads market appreciation with 8.2% annual expected growth. Prices range from 4,275 to 14,725 SAR/m² depending on district and type."
+            llm_response = "*North Riyadh (Hittin, Al-Malqa, Al-Narjis, Al-Aarid):*\nLeads market appreciation with ~4.2% annual expected growth. Prices range from 4,275 to 14,725 SAR/m² depending on district and type."
     elif "شرق" in query_lower or "east" in query_lower:
         if is_arabic:
             llm_response = "*أحياء شرق الرياض (المونسية، إشبيليا، القادسية):*\nتتميز بنشاط عمراني مرتفع، بمتوسط سعر متر للأراضي بين 4,370 إلى 7,410 ريال/م²، وتعتبر ممتازة للتطوير السكني والإيجارات."
@@ -214,13 +250,13 @@ if submit_button and user_query:
         else:
             llm_response = "*West Riyadh (Dharat Laban, Tuwaiq, Al-Mahdia):*\nOffers balanced residential choices with land prices from 2,945 to 5,225 SAR/m²."
     else:
-        detected_district = district
+        detected_district = active_data["p_district"]
         for ar_name, eng_name in arabic_to_district.items():
             if ar_name in user_query:
                 detected_district = eng_name
                 break
         
-        if detected_district == district:
+        if detected_district == active_data["p_district"]:
             for eng_name in district_prices.keys():
                 if eng_name.lower() in query_lower or eng_name.replace("-", "").lower() in query_lower.replace(" ", ""):
                     detected_district = eng_name
