@@ -3,8 +3,6 @@ import pandas as pd
 import numpy as np
 import joblib
 import os
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.pipeline import Pipeline
 
 st.set_page_config(
     page_title="Riyadh Real Estate AI Advisor",
@@ -37,37 +35,42 @@ model, df = load_model_and_data()
 
 # App Header
 st.title("🏡 Riyadh Real Estate AI & Investment Advisor")
-st.markdown("نظام ذكي متكامل لتحليل وتوقعات أسعار العقارات في مدينة الرياض باستخدام الذكاء الاصطناعي.")
+st.markdown("An end-to-end intelligent system for predicting real estate prices and providing investment advice in Riyadh using machine learning.")
 
 # Sidebar Controls
-st.sidebar.header("إعدادات البحث والتوقع")
-district = st.sidebar.selectbox("اختر الحي", ["الملقا", "النرجس", "الصحافة", "الياسمين", "حطين", "العارض", "النخيل"] if df is None else df.get('district', ["الملقا"]).unique())
-property_type = st.sidebar.selectbox("نوع العقار", ["فيلا", "شقة", "ارض", "عمارة"])
-area = st.sidebar.slider("المساحة (متر مربع)", 100, 1000, 300)
-bedrooms = st.sidebar.slider("عدد الغرف", 1, 10, 4)
-bathrooms = st.sidebar.slider("عدد دورات المياه", 1, 10, 4)
+st.sidebar.header("Search & Prediction Settings")
+
+default_districts = ["Al-Malqa", "An-Narjis", "As-Sahafah", "Al-Yasmin", "Hittin", "Al-Aarid", "Al-Nakheel"]
+if df is not None and "district" in df.columns:
+    district_list = list(df["district"].dropna().unique())
+else:
+    district_list = default_districts
+
+district = st.sidebar.selectbox("Select District", district_list)
+property_type = st.sidebar.selectbox("Property Type", ["Villa", "Apartment", "Land", "Building"])
+area = st.sidebar.slider("Area (sqm)", 100, 1000, 300)
+bedrooms = st.sidebar.slider("Bedrooms", 1, 10, 4)
+bathrooms = st.sidebar.slider("Bathrooms", 1, 10, 4)
 
 # Prediction Section
-if st.sidebar.button("توقع السعر الآن 🚀"):
-    st.subheader("نتائج التوقع والتحليل الذكي")
+if st.sidebar.button("Predict Price Now 🚀"):
+    st.subheader("AI Prediction Results")
     if model is not None:
         try:
-            # Dummy prediction structure matching features
             input_data = pd.DataFrame([[area, bedrooms, bathrooms]], columns=['area', 'bedrooms', 'bathrooms'])
             predicted_price = model.predict(input_data)[0]
-            st.success(f"السعر المتوقع للعقار: *{predicted:,.0f} ريال سعودي*")
+            st.success(f"Estimated Property Price: *{predicted_price:,.0f} SAR*")
         except Exception:
-            # Fallback estimation if model features differ
             base_price = area * 4500 + (bedrooms * 50000)
-            st.success(f"السعر التقديري للعقار: *{base_price:,.0f} ريال سعودي*")
+            st.success(f"Estimated Property Price: *{base_price:,.0f} SAR*")
     else:
         base_price = area * 4500 + (bedrooms * 50000)
-        st.success(f"السعر التقديري للعقار: *{base_price:,.0f} ريال سعودي*")
+        st.success(f"Estimated Property Price: *{base_price:,.0f} SAR*")
 
 # Chatbot Section
 st.markdown("---")
-st.subheader("💬 مستشار عقارات الرياض الذكي")
-st.markdown("اسأل المستشار أي سؤال عن العقار، الاستثمار، أو الأفرع في الرياض (مثال: ما هو أفضل الحي للاستثمار؟)")
+st.subheader("💬 Riyadh Real Estate AI Advisor")
+st.markdown("Ask the advisor any question regarding investments, districts, or real estate trends in Riyadh.")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -76,7 +79,7 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.write(message["content"])
 
-user_input = st.chat_input("اسأل المستشار (مثال: ما هو أفضل الأحياء للاستثمار في شمال الرياض؟)")
+user_input = st.chat_input("Ask the advisor (e.g., Which district is best for investment in North Riyadh?)")
 
 if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
@@ -87,14 +90,14 @@ if user_input:
         response_placeholder = st.empty()
         
         query_lower = user_input.lower()
-        if "شمال" in query_lower or "الملقا" in query_lower or "الصحافة" in query_lower:
-            reply = "مناطق شمال الرياض (مثل الملقا، الصحافة، والياسمين) تعيش طفرة نمو استثمارية بسبب قربها من مشاريع الرياض الكبرى والمركز المالي، وتعتبر خياراً ممتازاً لزيادة رأس المال."
-        elif "شقة" in query_lower or "شقق" in query_lower:
-            reply = "سوق الشقق السكنية في الرياض يشهد طلباً عالياً جداً خصوصاً من الشريحة الشابة، مع عائد إيجاري ممتاز يتراوح غالباً بين 6% إلى 8% سنوياً."
-        elif "عائد" in query_lower or "استثمار" in query_lower:
-            reply = "العوائد الاستثمارية في العقارات التجارية والسكنیة في شمال الرياض تعتبر من الأفضل، مع مراعاة اختيار عقارات حديثة البناء لمحدودية تكاليف الصيانة."
+        if "north" in query_lower or "malqa" in query_lower or "sahafah" in query_lower:
+            reply = "North Riyadh districts (such as Al-Malqa, As-Sahafah, and Al-Yasmin) are experiencing high capital growth due to proximity to major giga-projects and KAFD."
+        elif "apartment" in query_lower or "flat" in query_lower:
+            reply = "The residential apartment market in Riyadh shows strong rental yield, typically ranging between 6% to 8% annually."
+        elif "yield" in query_lower or "roi" in query_lower or "investment" in query_lower:
+            reply = "Commercial and residential real estate in prime northern districts offer high rental returns, especially for newly built modern units."
         else:
-            reply = f"بناءً على تحليلات البيانات العقارية في الرياض، سؤالك حول '{user_input}' يعكس اهتماماً واعداً بالمشاريع الكبرى والتطوير العمراني المستمر."
+            reply = f"Based on Riyadh real estate analytics, your query regarding '{user_input}' aligns with high-growth urban expansion areas."
             
         response_placeholder.write(reply)
         st.session_state.messages.append({"role": "assistant", "content": reply})
