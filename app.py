@@ -33,40 +33,39 @@ def load_model_and_data():
 
 model, df = load_model_and_data()
 
-# Accurate Real-World Price Ranges per m² based on market data
-# Format: {District: {"Land": (min, max), "Villa": (min, max), "Apartment": (min, max), "Building": (min, max)}}
+# Accurate Real-World Price Ranges per m² (slightly boosted for realism)
 district_prices = {
     # North
-    "Hittin": {"Land": (11000, 14000), "Villa": (7500, 9500), "Apartment": (5500, 7500), "Building": (7000, 9000)},
-    "Al-Malqa": {"Land": (9000, 12000), "Villa": (6500, 8500), "Apartment": (4500, 6000), "Building": (6000, 8000)},
-    "As-Sahafah": {"Land": (11000, 13000), "Villa": (6000, 7500), "Apartment": (4200, 5800), "Building": (5500, 7200)},
-    "Al-Yasmin": {"Land": (6500, 8500), "Villa": (5000, 6500), "Apartment": (4000, 5300), "Building": (4500, 6200)},
-    "Al-Narjis": {"Land": (5500, 7500), "Villa": (4500, 5800), "Apartment": (3500, 4800), "Building": (4000, 5500)},
-    "Al-Aarid": {"Land": (4000, 5500), "Villa": (3800, 4800), "Apartment": (3200, 4300), "Building": (3500, 4600)},
-    "Al-Nakheel": {"Land": (8000, 11000), "Villa": (6000, 7000), "Apartment": (4500, 5800), "Building": (5500, 6800)},
+    "Hittin": {"Land": (12000, 15500), "Villa": (8200, 10500), "Apartment": (6000, 8000), "Building": (7500, 9800)},
+    "Al-Malqa": {"Land": (10000, 13500), "Villa": (7200, 9400), "Apartment": (5000, 6800), "Building": (6500, 8800)},
+    "As-Sahafah": {"Land": (12000, 14500), "Villa": (6800, 8500), "Apartment": (4800, 6400), "Building": (6000, 8000)},
+    "Al-Yasmin": {"Land": (7200, 9500), "Villa": (5500, 7200), "Apartment": (4400, 5800), "Building": (5000, 6800)},
+    "Al-Narjis": {"Land": (6200, 8500), "Villa": (5000, 6500), "Apartment": (3800, 5300), "Building": (4500, 6000)},
+    "Al-Aarid": {"Land": (4500, 6200), "Villa": (4200, 5300), "Apartment": (3500, 4800), "Building": (3800, 5000)},
+    "Al-Nakheel": {"Land": (9000, 12500), "Villa": (6800, 7800), "Apartment": (5000, 6400), "Building": (6000, 7500)},
     
     # East
-    "Al-Munasiyah": {"Land": (5500, 7000), "Villa": (4000, 5000), "Apartment": (3000, 4200), "Building": (3800, 4800)},
-    "Al-Qadisiyah": {"Land": (4200, 5500), "Villa": (3800, 4600), "Apartment": (2800, 3900), "Building": (3400, 4400)},
-    "Ishbiliya": {"Land": (5000, 6800), "Villa": (4200, 5500), "Apartment": (3300, 4500), "Building": (3900, 5200)},
-    "Al-Rawdah": {"Land": (4800, 6500), "Villa": (4000, 5000), "Apartment": (2700, 3800), "Building": (3500, 4800)},
-    "Al-Hamra": {"Land": (5000, 7000), "Villa": (4200, 5200), "Apartment": (3000, 4100), "Building": (3800, 5000)},
+    "Al-Munasiyah": {"Land": (6000, 7800), "Villa": (4400, 5500), "Apartment": (3300, 4600), "Building": (4200, 5300)},
+    "Al-Qadisiyah": {"Land": (4600, 6100), "Villa": (4100, 5000), "Apartment": (3000, 4300), "Building": (3700, 4800)},
+    "Ishbiliya": {"Land": (5500, 7500), "Villa": (4600, 6000), "Apartment": (3600, 5000), "Building": (4300, 5700)},
+    "Al-Rawdah": {"Land": (5200, 7200), "Villa": (4400, 5500), "Apartment": (3000, 4200), "Building": (3800, 5300)},
+    "Al-Hamra": {"Land": (5500, 7800), "Villa": (4600, 5800), "Apartment": (3300, 4500), "Building": (4200, 5500)},
     
     # West
-    "Dharat Laban": {"Land": (3200, 4500), "Villa": (3000, 4000), "Apartment": (2500, 3500), "Building": (2800, 3800)},
-    "Tuwaiq": {"Land": (2800, 4200), "Villa": (2600, 3600), "Apartment": (2400, 3300), "Building": (2500, 3400)},
-    "Al-Mahdia": {"Land": (3500, 5000), "Villa": (3400, 4200), "Apartment": (2800, 3700), "Building": (3100, 4000)},
+    "Dharat Laban": {"Land": (3500, 5000), "Villa": (3300, 4400), "Apartment": (2800, 3800), "Building": (3100, 4200)},
+    "Tuwaiq": {"Land": (3100, 4600), "Villa": (2900, 4000), "Apartment": (2600, 3600), "Building": (2800, 3800)},
+    "Al-Mahdia": {"Land": (3800, 5500), "Villa": (3700, 4600), "Apartment": (3100, 4100), "Building": (3400, 4500)},
     
     # South
-    "Al-Shifa": {"Land": (2000, 3500), "Villa": (2300, 3200), "Apartment": (2000, 2800), "Building": (2100, 3000)},
-    "Al-Aziziyah": {"Land": (2000, 3500), "Villa": (2300, 3200), "Apartment": (2000, 2800), "Building": (2100, 3000)},
-    "Al-Dar El Beida": {"Land": (2000, 3500), "Villa": (2300, 3200), "Apartment": (2000, 2800), "Building": (2100, 3000)},
+    "Al-Shifa": {"Land": (2300, 3900), "Villa": (2500, 3500), "Apartment": (2200, 3100), "Building": (2300, 3300)},
+    "Al-Aziziyah": {"Land": (2300, 3900), "Villa": (2500, 3500), "Apartment": (2200, 3100), "Building": (2300, 3300)},
+    "Al-Dar El Beida": {"Land": (2300, 3900), "Villa": (2500, 3500), "Apartment": (2200, 3100), "Building": (2300, 3300)},
     
     # Central
-    "Al-Olaya": {"Land": (9000, 15000), "Villa": (6000, 8000), "Apartment": (4500, 6500), "Building": (5500, 7500)},
-    "Al-Sulaimaniyah": {"Land": (8500, 13000), "Villa": (5500, 7500), "Apartment": (4200, 6000), "Building": (5200, 7000)},
-    "Al-Murabba": {"Land": (4000, 6000), "Villa": (3500, 4500), "Apartment": (2500, 3600), "Building": (3000, 4200)},
-    "Al-Malaz": {"Land": (4000, 6000), "Villa": (3500, 4500), "Apartment": (2500, 3600), "Building": (3000, 4200)}
+    "Al-Olaya": {"Land": (10000, 16500), "Villa": (6800, 8800), "Apartment": (5000, 7200), "Building": (6000, 8200)},
+    "Al-Sulaimaniyah": {"Land": (9500, 14500), "Villa": (6000, 8200), "Apartment": (4600, 6600), "Building": (5700, 7700)},
+    "Al-Murabba": {"Land": (4500, 6800), "Villa": (3800, 5000), "Apartment": (2800, 4000), "Building": (3300, 4600)},
+    "Al-Malaz": {"Land": (4500, 6800), "Villa": (3800, 5000), "Apartment": (2800, 4000), "Building": (3300, 4600)}
 }
 
 region_districts = {
@@ -106,22 +105,19 @@ st.markdown("An advanced Machine Learning portfolio project for analyzing, predi
 
 # Realistic Calculation Logic based on Market Data
 def calculate_realistic_predictions():
-    # Fetch accurate price range per m² for the selected district and property type
-    price_range = district_prices.get(district, {"Land": (4000, 6000), "Villa": (4000, 6000), "Apartment": (3500, 5000), "Building": (4000, 6000)})
-    min_m2, max_m2 = price_range.get(property_type, (4000, 6000))
+    price_range = district_prices.get(district, {"Land": (4500, 6500), "Villa": (4500, 6500), "Apartment": (3800, 5300), "Building": (4500, 6500)})
+    min_m2, max_m2 = price_range.get(property_type, (4500, 6500))
     
-    # Base price per m² (using midpoint or slightly weighted)
     base_m2_price = (min_m2 + max_m2) / 2
     
     if property_type == "Land":
         estimated_price = area * base_m2_price
     else:
-        # Building/Villa/Apartment calculation considering rooms, bathrooms, and age depreciation
-        estimated_price = (area * base_m2_price) + (bedrooms * 35000) + (bathrooms * 20000) - (property_age * 15000)
+        estimated_price = (area * base_m2_price) + (bedrooms * 40000) + (bathrooms * 25000) - (property_age * 18000)
     
-    estimated_price = max(estimated_price, 250000)
+    estimated_price = max(estimated_price, 300000)
 
-    growth_rate = 0.035 if region in ["North", "Central"] else 0.025
+    growth_rate = 0.040 if region in ["North", "Central"] else 0.030
     projected_price = estimated_price * (1 + growth_rate)
     diff = projected_price - estimated_price
 
