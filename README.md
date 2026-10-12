@@ -16,11 +16,14 @@ An end-to-end Machine Learning web application built to analyze and predict resi
 
 ## ⚙️ How to Run Locally
 
-1.⁠ ⁠Clone the repository:
+1.⁠ ⁠Clone the repository: 
 git clone https://github.com/renadalotaiibi0/riyadh-real-estate-ai.git
 
-2.⁠ ⁠Install dependencies:
+2.⁠ ⁠Install dependencies: 
 pip install -r requirements.txt
 
-3.⁠ ⁠Run the Streamlit application:
-streamlit run app.py
+3.⁠ ⁠Train the model (if required): 
+python3 train_model.py
+
+4.⁠ ⁠Run the Streamlit application: 
+python3 -m streamlit run app.py
