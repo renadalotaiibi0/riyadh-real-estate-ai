@@ -59,6 +59,32 @@ district_prices = {
     "Al-Malaz": {"Land": (4275, 6460), "Villa": (3610, 4750), "Apartment": (2660, 3800), "Building": (3135, 4370)}
 }
 
+# Arabic Aliases Mapping
+arabic_to_district = {
+    "حطين": "Hittin",
+    "الملقا": "Al-Malqa", "ملقا": "Al-Malqa",
+    "الصحافة": "As-Sahafah", "صحافة": "As-Sahafah",
+    "الياسمين": "Al-Yasmin", "ياسمين": "Al-Yasmin",
+    "النرجس": "Al-Narjis", "نرجس": "Al-Narjis",
+    "العارض": "Al-Aarid", "عارض": "Al-Aarid",
+    "النخيل": "Al-Nakheel", "نخيل": "Al-Nakheel",
+    "المونسية": "Al-Munasiyah", "مونسية": "Al-Munasiyah",
+    "القادسية": "Al-Qadisiyah", "قادسية": "Al-Qadisiyah",
+    "إشبيليا": "Ishbiliya", "اشبيليا": "Ishbiliya",
+    "الروضة": "Al-Rawdah", "روضة": "Al-Rawdah",
+    "الحمراء": "Al-Hamra", "حمراء": "Al-Hamra",
+    "لبن": "Dharat Laban", "ضاحية لبن": "Dharat Laban", "ظهرة لبن": "Dharat Laban",
+    "طويق": "Tuwaiq",
+    "المهدية": "Al-Mahdia", "مهدية": "Al-Mahdia",
+    "الشفاء": "Al-Shifa", "شفاء": "Al-Shifa",
+    "العزيزية": "Al-Aziziyah", "عزيزية": "Al-Aziziyah",
+    "الدار البيضاء": "Al-Dar El Beida", "دار البيضاء": "Al-Dar El Beida",
+    "العليا": "Al-Olaya", "عليا": "Al-Olaya",
+    "السليمانية": "Al-Sulaimaniyah", "سليمانية": "Al-Sulaimaniyah",
+    "المربع": "Al-Murabba", "مربع": "Al-Murabba",
+    "الملز": "Al-Malaz", "ملز": "Al-Malaz"
+}
+
 region_districts = {
     "North": ["Hittin", "Al-Malqa", "As-Sahafah", "Al-Yasmin", "Al-Narjis", "Al-Aarid", "Al-Nakheel"],
     "East": ["Al-Munasiyah", "Al-Qadisiyah", "Ishbiliya", "Al-Rawdah", "Al-Hamra"],
@@ -139,21 +165,21 @@ st.markdown("*Investment Rating:* 🔥 High Growth Potential (Prime Investment)"
 st.info(f"Properties in *{district}* ({region} Riyadh) demonstrate robust pricing based on recent market transactions, excellent neighborhood services, and strong investor demand.")
 
 # ==========================================
-# PHASE 3: SMART CONTEXT-AWARE LLM ADVISOR
+# PHASE 3: ACCURATE BILINGUAL LLM ADVISOR
 # ==========================================
 st.markdown("---")
 st.subheader("🤖 LLM Real Estate Advisor")
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "مرحباً بك! اسألني عن أسعار المتر لأي حي، أفضل أحياء الاستثمار، أو تقييم عقارك."}
+        {"role": "assistant", "content": "مرحباً بك! اسألني بالعربي أو الإنجليزية عن أسعار الأحياء، الاستثمار، أو التقييم.\n\nHello! Ask me in English or Arabic about district prices, investment, or property valuation."}
     ]
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-user_query = st.chat_input("اسأل عن أسعار الأحياء، الاستثمار، أو التقييم...")
+user_query = st.chat_input("اسأل بالعربي أو الإنجليزي / Ask in English or Arabic...")
 
 if user_query:
     st.session_state.messages.append({"role": "user", "content": user_query})
@@ -164,28 +190,48 @@ if user_query:
         with st.spinner("جاري التحليل..."):
             query_lower = user_query.lower()
             
-            # Detect if user mentioned a specific district in their query
-            detected_district = district  # default to sidebar selection
-            for d in district_prices.keys():
-                if d.lower() in query_lower or d.replace("-", "").lower() in query_lower.replace(" ", ""):
-                    detected_district = d
+            # Smart District Detection (English + Arabic)
+            detected_district = district
+            
+            # First check Arabic matching
+            for ar_name, eng_name in arabic_to_district.items():
+                if ar_name in user_query:
+                    detected_district = eng_name
                     break
             
-            # Smart Matching based on user intent
-            if "أفضل" in query_lower or "افضل" in query_lower or "استثمار" in query_lower:
-                llm_response = f"*أفضل ترشيحات الاستثمار في الرياض:\n1. **شمال الرياض (نمو رأسمالي قوي):* أحياء مثل *حطين، **الملقا، و **النرجس.\n2. **شرق الرياض (عوائد إيجارية ممتازة):* أحياء مثل *المونسية* و *إشبيليا*."
-            elif "سعر المتر" in query_lower or "كم المتر" in query_lower or "التكلفة" in query_lower or "بكم" in query_lower:
-                p_range = district_prices.get(detected_district, {"Land": (4000, 6000)})
-                land_min, land_max = p_range["Land"]
-                villa_min, villa_max = p_range["Villa"]
-                apt_min, apt_max = p_range["Apartment"]
-                llm_response = f"*متوسط أسعار المتر في حي ({detected_district}):*\n- الأراضي: من {land_min:,} إلى {land_max:,} ريال/م²\n- الفلل: من {villa_min:,} إلى {villa_max:,} ريال/م²\n- الشقق: من {apt_min:,} إلى {apt_max:,} ريال/م²"
-            elif "عائد" in query_lower or "yield" in query_lower:
-                llm_response = f"تتراوح العوائد الإيجارية المتوقعة في *{detected_district}* بين 6% إلى 8% سنوياً للشقق والمباني السكنية."
-            elif "تقييم" in query_lower or "السعر التقديري" in query_lower:
-                llm_response = f"السعر التقديري للـ *{property_type}* في حي *{detected_district}* هو *{est_price:,.0f} ريال سعودي*."
+            # Second check English matching if Arabic wasn't found
+            if detected_district == district:
+                for eng_name in district_prices.keys():
+                    if eng_name.lower() in query_lower or eng_name.replace("-", "").lower() in query_lower.replace(" ", ""):
+                        detected_district = eng_name
+                        break
+            
+            is_arabic = any('\u0600' <= char <= '\u06FF' for char in user_query)
+
+            if is_arabic:
+                if "أفضل" in query_lower or "افضل" in query_lower or "ترشيح" in query_lower:
+                    llm_response = f"*أفضل ترشيحات الاستثمار في الرياض:\n1. **شمال الرياض (نمو رأسمالي قوي):* أحياء *حطين، **الملقا، و **النرجس.\n2. **شرق الرياض (عوائد إيجارية ممتازة):* أحياء *المونسية* و *إشبيليا*."
+                elif "سعر" in query_lower or "متر" in query_lower or "بكم" in query_lower or "تكلفة" in query_lower:
+                    p_range = district_prices.get(detected_district, {"Land": (4000, 6000), "Villa": (4000, 6000), "Apartment": (3500, 5000)})
+                    land_min, land_max = p_range["Land"]
+                    villa_min, villa_max = p_range["Villa"]
+                    apt_min, apt_max = p_range["Apartment"]
+                    llm_response = f"*متوسط أسعار المتر في حي ({detected_district}):*\n- الأراضي: من {land_min:,} إلى {land_max:,} ريال/م²\n- الفلل: من {villa_min:,} إلى {villa_max:,} ريال/م²\n- الشقق: من {apt_min:,} إلى {apt_max:,} ريال/م²"
+                elif "عائد" in query_lower or "استثمار" in query_lower:
+                    llm_response = f"تتراوح العوائد الإيجارية المتوقعة في *{detected_district}* بين 6% إلى 8% سنوياً للشقق والمباني السكنية."
+                else:
+                    llm_response = f"يشهد حي *{detected_district}* نشاطاً عقارياً مستقراً وطلباً استثمارياً عالياً بناءً على مؤشرات السوق الحالية."
             else:
-                llm_response = f"يشهد حي *{detected_district}* نشاطاً عقارياً مستقراً وطلباً استثمارياً عالياً بناءً على مؤشرات السوق الحالية."
+                if "best" in query_lower or "top" in query_lower or "recommend" in query_lower:
+                    llm_response = f"*Top Investment Districts:\n1. **North Riyadh:* *Hittin, **Al-Malqa, and **Al-Narjis.\n2. **East Riyadh:* *Al-Munasiyah* and *Ishbiliya*."
+                elif "price" in query_lower or "cost" in query_lower or "meter" in query_lower or "how much" in query_lower:
+                    p_range = district_prices.get(detected_district, {"Land": (4000, 6000), "Villa": (4000, 6000), "Apartment": (3500, 5000)})
+                    land_min, land_max = p_range["Land"]
+                    villa_min, villa_max = p_range["Villa"]
+                    apt_min, apt_max = p_range["Apartment"]
+                    llm_response = f"*Price per m² in ({detected_district}):*\n- Land: {land_min:,} to {land_max:,} SAR/m²\n- Villa: {villa_min:,} to {villa_max:,} SAR/m²\n- Apartment: {apt_min:,} to {apt_max:,} SAR/m²"
+                else:
+                    llm_response = f"District *{detected_district}* displays strong investment demand and steady performance in current Riyadh market indicators."
 
             st.markdown(llm_response)
             st.session_state.messages.append({"role": "assistant", "content": llm_response})
