@@ -10,9 +10,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# Top anchor to force view from top
-top_anchor = st.empty()
-
 # Load Model and Data Safely
 @st.cache_resource
 def load_model_and_data():
@@ -170,7 +167,7 @@ st.markdown("*Investment Rating:* 🔥 High Growth Potential (Prime Investment)"
 st.info(f"Properties in *{district}* ({region} Riyadh) demonstrate robust pricing based on recent market transactions, excellent neighborhood services, and strong investor demand.")
 
 # ==========================================
-# PHASE 3: ACCURATE BILINGUAL LLM ADVISOR
+# PHASE 3: STABLE FORM-BASED LLM ADVISOR (Starts from top)
 # ==========================================
 st.markdown("---")
 st.subheader("🤖 LLM Real Estate Advisor")
@@ -184,74 +181,73 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-user_query = st.chat_input("Ask a question / اكتب سؤالك هنا...")
+# Using a standard form instead of st.chat_input to prevent auto-scroll to bottom on load
+with st.form(key="chat_form", clear_on_submit=True):
+    user_query = st.text_input("اكتب سؤالك هنا / Ask a question...")
+    submit_button = st.form_submit_button(label="🚀 إرسال / Send")
 
-if user_query:
+if submit_button and user_query:
     st.session_state.messages.append({"role": "user", "content": user_query})
-    with st.chat_message("user"):
-        st.markdown(user_query)
-
-    with st.chat_message("assistant"):
-        with st.spinner("جاري التحليل..."):
-            query_lower = user_query.lower()
-            is_arabic = any('\u0600' <= char <= '\u06FF' for char in user_query)
-            
-            # Regional Queries Matching
-            if "جنوب" in query_lower or "south" in query_lower:
-                if is_arabic:
-                    llm_response = "*أحياء جنوب الرياض (الشفاء، العزيزية، الدار البيضاء):*\nتقدم خيارات اقتصادية بأسعار متر تتراوح بين 2,185 إلى 3,705 ريال/م² للأراضي، مع عائد إيجاري ممتاز ومستقر للباحثين عن الاستثمار منخفض التكلفة."
-                else:
-                    llm_response = "*South Riyadh (Al-Shifa, Al-Aziziyah, Al-Dar El Beida):*\nOffers economical options with land prices from 2,185 to 3,705 SAR/m², ideal for steady rental yields at a lower entry cost."
-            elif "شمال" in query_lower or "north" in query_lower:
-                if is_arabic:
-                    llm_response = "*أحياء شمال الرياض (حطين، الملقا، النرجس، العارض):*\nتعتبر أعلى مناطق الرياض نمواً بنسبة نمو سنوي متوقعة 4%. أسعار المتر تتراوح بين 4,275 إلى 14,725 ريال/م² حسب الحي ونوع العقار."
-                else:
-                    llm_response = "*North Riyadh (Hittin, Al-Malqa, Al-Narjis, Al-Aarid):*\nLeads market appreciation with 4% annual expected growth. Prices range from 4,275 to 14,725 SAR/m² depending on district and type."
-            elif "شرق" in query_lower or "east" in query_lower:
-                if is_arabic:
-                    llm_response = "*أحياء شرق الرياض (المونسية، إشبيليا، القادسية):*\nتتميز بنشاط عمراني مرتفع، بمتوسط سعر متر للأراضي بين 4,370 إلى 7,410 ريال/م²، وتعتبر ممتازة للتطوير السكني والإيجارات."
-                else:
-                    llm_response = "*East Riyadh (Al-Munasiyah, Ishbiliya, Al-Qadisiyah):*\nShows strong residential expansion with land prices from 4,370 to 7,410 SAR/m², offering high rental turnover."
-            elif "غرب" in query_lower or "west" in query_lower:
-                if is_arabic:
-                    llm_response = "*أحياء غرب الرياض (لبن، طويق، المهدية):*\nخيارات متوازنة بأسعار مناسبة تتراوح للأراضي بين 2,945 إلى 5,225 ريال/م²."
-                else:
-                    llm_response = "*West Riyadh (Dharat Laban, Tuwaiq, Al-Mahdia):*\nOffers balanced residential choices with land prices from 2,945 to 5,225 SAR/m²."
+    
+    query_lower = user_query.lower()
+    is_arabic = any('\u0600' <= char <= '\u06FF' for char in user_query)
+    
+    # Regional Queries Matching
+    if "جنوب" in query_lower or "south" in query_lower:
+        if is_arabic:
+            llm_response = "*أحياء جنوب الرياض (الشفاء، العزيزية، الدار البيضاء):*\nتقدم خيارات اقتصادية بأسعار متر تتراوح بين 2,185 إلى 3,705 ريال/م² للأراضي، مع عائد إيجاري ممتاز ومستقر للباحثين عن الاستثمار منخفض التكلفة."
+        else:
+            llm_response = "*South Riyadh (Al-Shifa, Al-Aziziyah, Al-Dar El Beida):*\nOffers economical options with land prices from 2,185 to 3,705 SAR/m², ideal for steady rental yields at a lower entry cost."
+    elif "شمال" in query_lower or "north" in query_lower:
+        if is_arabic:
+            llm_response = "*أحياء شمال الرياض (حطين، الملقا، النرجس، العارض):*\nتعتبر أعلى مناطق الرياض نمواً بنسبة نمو سنوي متوقعة 4%. أسعار المتر تتراوح بين 4,275 إلى 14,725 ريال/م² حسب الحي ونوع العقار."
+        else:
+            llm_response = "*North Riyadh (Hittin, Al-Malqa, Al-Narjis, Al-Aarid):*\nLeads market appreciation with 4% annual expected growth. Prices range from 4,275 to 14,725 SAR/m² depending on district and type."
+    elif "شرق" in query_lower or "east" in query_lower:
+        if is_arabic:
+            llm_response = "*أحياء شرق الرياض (المونسية، إشبيليا، القادسية):*\nتتميز بنشاط عمراني مرتفع، بمتوسط سعر متر للأراضي بين 4,370 إلى 7,410 ريال/م²، وتعتبر ممتازة للتطوير السكني والإيجارات."
+        else:
+            llm_response = "*East Riyadh (Al-Munasiyah, Ishbiliya, Al-Qadisiyah):*\nShows strong residential expansion with land prices from 4,370 to 7,410 SAR/m², offering high rental turnover."
+    elif "غرب" in query_lower or "west" in query_lower:
+        if is_arabic:
+            llm_response = "*أحياء غرب الرياض (لبن، طويق، المهدية):*\nخيارات متوازنة بأسعار مناسبة تتراوح للأراضي بين 2,945 إلى 5,225 ريال/م²."
+        else:
+            llm_response = "*West Riyadh (Dharat Laban, Tuwaiq, Al-Mahdia):*\nOffers balanced residential choices with land prices from 2,945 to 5,225 SAR/m²."
+    else:
+        detected_district = district
+        for ar_name, eng_name in arabic_to_district.items():
+            if ar_name in user_query:
+                detected_district = eng_name
+                break
+        
+        if detected_district == district:
+            for eng_name in district_prices.keys():
+                if eng_name.lower() in query_lower or eng_name.replace("-", "").lower() in query_lower.replace(" ", ""):
+                    detected_district = eng_name
+                    break
+        
+        if is_arabic:
+            if "أفضل" in query_lower or "افضل" in query_lower or "ترشيح" in query_lower:
+                llm_response = f"*أفضل ترشيحات الاستثمار في الرياض:\n1. **شمال الرياض (نمو رأسمالي قوي):* أحياء *حطين، **الملقا، و **النرجس.\n2. **شرق الرياض (عوائد إيجارية ممتازة):* أحياء *المونسية* و *إشبيليا*."
+            elif "سعر" in query_lower or "متر" in query_lower or "بكم" in query_lower or "تكلفة" in query_lower:
+                p_range = district_prices.get(detected_district, {"Land": (4000, 6000), "Villa": (4000, 6000), "Apartment": (3500, 5000)})
+                land_min, land_max = p_range["Land"]
+                villa_min, villa_max = p_range["Villa"]
+                apt_min, apt_max = p_range["Apartment"]
+                llm_response = f"*متوسط أسعار المتر في حي ({detected_district}):*\n- الأراضي: من {land_min:,} إلى {land_max:,} ريال/م²\n- الفلل: من {villa_min:,} إلى {villa_max:,} ريال/م²\n- الشقق: من {apt_min:,} إلى {apt_max:,} ريال/م²"
             else:
-                detected_district = district
-                for ar_name, eng_name in arabic_to_district.items():
-                    if ar_name in user_query:
-                        detected_district = eng_name
-                        break
-                
-                if detected_district == district:
-                    for eng_name in district_prices.keys():
-                        if eng_name.lower() in query_lower or eng_name.replace("-", "").lower() in query_lower.replace(" ", ""):
-                            detected_district = eng_name
-                            break
-                
-                if is_arabic:
-                    if "أفضل" in query_lower or "افضل" in query_lower or "ترشيح" in query_lower:
-                        llm_response = f"*أفضل ترشيحات الاستثمار في الرياض:\n1. **شمال الرياض (نمو رأسمالي قوي):* أحياء *حطين، **الملقا، و **النرجس.\n2. **شرق الرياض (عوائد إيجارية ممتازة):* أحياء *المونسية* و *إشبيليا*."
-                    elif "سعر" in query_lower or "متر" in query_lower or "بكم" in query_lower or "تكلفة" in query_lower:
-                        p_range = district_prices.get(detected_district, {"Land": (4000, 6000), "Villa": (4000, 6000), "Apartment": (3500, 5000)})
-                        land_min, land_max = p_range["Land"]
-                        villa_min, villa_max = p_range["Villa"]
-                        apt_min, apt_max = p_range["Apartment"]
-                        llm_response = f"*متوسط أسعار المتر في حي ({detected_district}):*\n- الأراضي: من {land_min:,} إلى {land_max:,} ريال/م²\n- الفلل: من {villa_min:,} إلى {villa_max:,} ريال/م²\n- الشقق: من {apt_min:,} إلى {apt_max:,} ريال/م²"
-                    else:
-                        llm_response = f"يشهد حي *{detected_district}* نشاطاً عقارياً مستقراً وطلباً استثمارياً عالياً بناءً على مؤشرات السوق الحالية."
-                else:
-                    if "best" in query_lower or "top" in query_lower or "recommend" in query_lower:
-                        llm_response = f"*Top Investment Districts:\n1. **North Riyadh:* *Hittin, **Al-Malqa, and **Al-Narjis.\n2. **East Riyadh:* *Al-Munasiyah* and *Ishbiliya*."
-                    elif "price" in query_lower or "cost" in query_lower or "meter" in query_lower or "how much" in query_lower:
-                        p_range = district_prices.get(detected_district, {"Land": (4000, 6000), "Villa": (4000, 6000), "Apartment": (3500, 5000)})
-                        land_min, land_max = p_range["Land"]
-                        villa_min, villa_max = p_range["Villa"]
-                        apt_min, apt_max = p_range["Apartment"]
-                        llm_response = f"*Price per m² in ({detected_district}):*\n- Land: {land_min:,} to {land_max:,} SAR/m²\n- Villa: {villa_min:,} to {villa_max:,} SAR/m²\n- Apartment: {apt_min:,} to {apt_max:,} SAR/m²"
-                    else:
-                        llm_response = f"District *{detected_district}* displays strong investment demand and steady performance in current Riyadh market indicators."
+                llm_response = f"يشهد حي *{detected_district}* نشاطاً عقارياً مستقراً وطلباً استثمارياً عالياً بناءً على مؤشرات السوق الحالية."
+        else:
+            if "best" in query_lower or "top" in query_lower or "recommend" in query_lower:
+                llm_response = f"*Top Investment Districts:\n1. **North Riyadh:* *Hittin, **Al-Malqa, and **Al-Narjis.\n2. **East Riyadh:* *Al-Munasiyah* and *Ishbiliya*."
+            elif "price" in query_lower or "cost" in query_lower or "meter" in query_lower or "how much" in query_lower:
+                p_range = district_prices.get(detected_district, {"Land": (4000, 6000), "Villa": (4000, 6000), "Apartment": (3500, 5000)})
+                land_min, land_max = p_range["Land"]
+                villa_min, villa_max = p_range["Villa"]
+                apt_min, apt_max = p_range["Apartment"]
+                llm_response = f"*Price per m² in ({detected_district}):*\n- Land: {land_min:,} to {land_max:,} SAR/m²\n- Villa: {villa_min:,} to {villa_max:,} SAR/m²\n- Apartment: {apt_min:,} to {apt_max:,} SAR/m²"
+            else:
+                llm_response = f"District *{detected_district}* displays strong investment demand and steady performance in current Riyadh market indicators."
 
-            st.markdown(llm_response)
-            st.session_state.messages.append({"role": "assistant", "content": llm_response})
+    st.session_state.messages.append({"role": "assistant", "content": llm_response})
+    st.rerun()
