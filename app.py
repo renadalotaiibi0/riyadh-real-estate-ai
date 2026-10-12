@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Load Model and Data Safely
+# Load Model and Data Safely (Fully bulletproof against CSV errors)
 @st.cache_resource
 def load_model_and_data():
     csv_path = "riyadh_real_estate.csv"
@@ -25,9 +25,13 @@ def load_model_and_data():
             
     if os.path.exists(csv_path):
         try:
-            df = pd.read_csv(csv_path, on_bad_lines='skip')
+            # Safe CSV loading with fallback engines to prevent parser errors
+            df = pd.read_csv(csv_path, sep=None, engine='python', on_bad_lines='skip')
         except Exception:
-            pass
+            try:
+                df = pd.read_csv(csv_path, encoding='utf-8', on_bad_lines='skip')
+            except Exception:
+                pass
             
     return model, df
 
