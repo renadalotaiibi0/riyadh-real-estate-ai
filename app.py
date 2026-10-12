@@ -121,7 +121,7 @@ predict_btn = st.sidebar.button("🔮 Predict Price & Trends")
 st.title("🏡 Riyadh Real Estate Price Prediction & Investment Advisor")
 st.markdown("An advanced Machine Learning portfolio project for analyzing, predicting property prices, and forecasting market trends in Riyadh.")
 
-# Calculation Logic (Growth rate increased by 5%)
+# Calculation Logic (Growth rate increased by an extra 4%: 4.2% -> 8.2%, 3.15% -> 7.15%)
 def calculate_realistic_predictions():
     price_range = district_prices.get(district, {"Land": (4275, 6175), "Villa": (4275, 6175), "Apartment": (3610, 5035), "Building": (4275, 6175)})
     min_m2, max_m2 = price_range.get(property_type, (4275, 6175))
@@ -134,8 +134,8 @@ def calculate_realistic_predictions():
     
     estimated_price = max(estimated_price, 285000)
     
-    # Increased growth rate by 5% (4% -> 4.2%, 3% -> 3.15%)
-    growth_rate = 0.042 if region in ["North", "Central"] else 0.0315
+    # Growth rate: 8.2% for North/Central, 7.15% for others
+    growth_rate = 0.082 if region in ["North", "Central"] else 0.0715
     projected_price = estimated_price * (1 + growth_rate)
     diff = projected_price - estimated_price
 
@@ -200,9 +200,9 @@ if submit_button and user_query:
             llm_response = "*South Riyadh (Al-Shifa, Al-Aziziyah, Al-Dar El Beida):*\nOffers economical options with land prices from 2,185 to 3,705 SAR/m², ideal for steady rental yields at a lower entry cost."
     elif "شمال" in query_lower or "north" in query_lower:
         if is_arabic:
-            llm_response = "*أحياء شمال الرياض (حطين، الملقا، النرجس، العارض):*\nتعتبر أعلى مناطق الرياض نمواً بنسبة نمو سنوي متوقعة 4.2%. أسعار المتر تتراوح بين 4,275 إلى 14,725 ريال/م² حسب الحي ونوع العقار."
+            llm_response = "*أحياء شمال الرياض (حطين، الملقا، النرجس، العارض):*\nتعتبر أعلى مناطق الرياض نمواً بنسبة نمو سنوي متوقعة 8.2%. أسعار المتر تتراوح بين 4,275 إلى 14,725 ريال/م² حسب الحي ونوع العقار."
         else:
-            llm_response = "*North Riyadh (Hittin, Al-Malqa, Al-Narjis, Al-Aarid):*\nLeads market appreciation with 4.2% annual expected growth. Prices range from 4,275 to 14,725 SAR/m² depending on district and type."
+            llm_response = "*North Riyadh (Hittin, Al-Malqa, Al-Narjis, Al-Aarid):*\nLeads market appreciation with 8.2% annual expected growth. Prices range from 4,275 to 14,725 SAR/m² depending on district and type."
     elif "شرق" in query_lower or "east" in query_lower:
         if is_arabic:
             llm_response = "*أحياء شرق الرياض (المونسية، إشبيليا، القادسية):*\nتتميز بنشاط عمراني مرتفع، بمتوسط سعر متر للأراضي بين 4,370 إلى 7,410 ريال/م²، وتعتبر ممتازة للتطوير السكني والإيجارات."
