@@ -45,14 +45,22 @@ region_districts = {
 # Sidebar - Property Features
 st.sidebar.markdown("### 🔧 Property Features")
 
-property_type = st.sidebar.selectbox("Property Type:", ["Apartment", "Villa", "Land", "Building"])
+property_type = st.sidebar.selectbox("Property Type:", ["Apartment", "Villa", "Building", "Land"])
 region = st.sidebar.selectbox("Select Region:", list(region_districts.keys()))
 district = st.sidebar.selectbox("Select District:", region_districts[region])
 
-area = st.sidebar.slider("Property Area (m²):", 50, 1500, 210)
-bedrooms = st.sidebar.slider("Bedrooms:", 1, 10, 2)
-bathrooms = st.sidebar.slider("Bathrooms:", 1, 10, 3)
-property_age = st.sidebar.slider("Property Age (Years):", 0, 30, 0)
+# Dynamic inputs based on property type
+if property_type == "Land":
+    area = st.sidebar.slider("Land Area (m²):", 200, 3000, 500)
+    bedrooms = 0
+    bathrooms = 0
+    property_age = 0
+else:
+    min_area = 120 if property_type == "Apartment" else 250
+    area = st.sidebar.slider("Property Area (m²):", min_area, 1500, 300)
+    bedrooms = st.sidebar.slider("Bedrooms:", 1, 10, 3)
+    bathrooms = st.sidebar.slider("Bathrooms:", 1, 10, 3)
+    property_age = st.sidebar.slider("Property Age (Years):", 0, 30, 2)
 
 predict_btn = st.sidebar.button("🔮 Predict Price & Trends")
 
@@ -62,15 +70,22 @@ st.markdown("An advanced Machine Learning portfolio project for analyzing, predi
 
 # Calculation & Prediction Logic
 def calculate_predictions():
-    # Base calculation logic fallback
-    base_m2 = 5500 if region == "North" else 4200
+    base_m2 = 6000 if region == "North" else 4500
     if property_type == "Villa":
         base_m2 *= 1.3
+    elif property_type == "Land":
+        base_m2 *= 1.1
+    elif property_type == "Building":
+        base_m2 *= 1.5
     
-    estimated_price = (area * base_m2) + (bedrooms * 40000) + (bathrooms * 25000) - (property_age * 15000)
-    estimated_price = max(estimated_price, 300000)
+    if property_type == "Land":
+        estimated_price = area * base_m2
+    else:
+        estimated_price = (area * base_m2) + (bedrooms * 40000) + (bathrooms * 25000) - (property_age * 15000)
+    
+    estimated_price = max(estimated_price, 400000)
 
-    if model is not None:
+    if model is not None and property_type != "Land":
         try:
             input_data = pd.DataFrame([[area, bedrooms, bathrooms]], columns=['area', 'bedrooms', 'bathrooms'])
             model_pred = model.predict(input_data)[0]
@@ -85,12 +100,11 @@ def calculate_predictions():
 
     return estimated_price, projected_price, diff, growth_rate
 
-# Default / Triggered Display
 st.success(f"✨ Analysis for *{property_type}* Completed Successfully!")
 
 est_price, proj_price, price_diff, growth = calculate_predictions()
 
-# Metrics Layout (3 Columns)
+# Metrics Layout (3 Columns) with White Text for Projected Difference
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -100,7 +114,7 @@ with col1:
 with col2:
     st.markdown("*📈 Projected Price (1-Year)*")
     st.header(f"{proj_price:,.0f} SAR")
-    st.caption(f"▲ +{price_diff:,.0f} SAR ({growth*100:.1f}%)")
+    st.markdown(f"<span style='color: white; font-weight: bold;'>▲ +{price_diff:,.0f} SAR ({growth*100:.1f}%)</span>", unsafe_allow_html=True)
 
 with col3:
     st.markdown("*📍 Location & Type*")
