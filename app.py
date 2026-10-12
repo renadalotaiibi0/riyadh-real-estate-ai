@@ -156,6 +156,6 @@ if user_input := st.chat_input("اسأل المستشار (مثال: ما هي �
             reply = f"بناءً على تحليلات البيانات العقارية في الرياض: سؤالك حول '{user_input}' يرتبط بمؤشرات السوق الحالية. السوق العقاري بالرياض يمر بمرحلة توسع قوية مدعومة بالمشاريع الكبرى والتطوير العمراني المستمر."
 
         response_placeholder.write(reply)
-        st.session_state.messages.append({"role": "assistant", "content": reply})250000, 4900000, 1380000, 5200000]
+        st.session_state.messages.append({"role": "assistant", "content": reply}
     })
     st.dataframe(sample_df)
