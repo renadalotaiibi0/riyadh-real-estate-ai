@@ -1,0 +1,60 @@
+import pandas as pd
+import numpy as np
+
+# تحديد البذرة العشوائية لضمان تكرار نفس النتائج
+np.random.seed(42)
+
+def generate_riyadh_real_estate_data(n_samples=1000):
+    districts_info = {
+        'North': ['Al-Malqa', 'Al-Yasmin', 'Al-Narjis', 'Al-Sahafa', 'Al-Aqiq'],
+        'East': ['Al-Munsiyah', 'Al-Rmailah', 'Al-Qadisiyah', 'Al-Hamra'],
+        'West': ['Dharat Laban', 'Al-Tuwaiq', 'Al-Mahdiyah'],
+        'South': ['Al-Suwaidi', 'Al-Shifa', 'Al-Aziziyah'],
+        'Central': ['Al-Olaya', 'Al-Sulaimaniyah', 'Al-Murabba']
+    }
+
+    data = []
+    
+    for _ in range(n_samples):
+        region = np.random.choice(list(districts_info.keys()), p=[0.35, 0.25, 0.15, 0.15, 0.10])
+        district = np.random.choice(districts_info[region])
+        area = int(np.random.normal(350, 100))
+        area = max(100, min(area, 1200)) # تحديد النطاق بين 100 و 1200 م2
+        
+        bedrooms = np.random.randint(2, 7)
+        bathrooms = bedrooms + np.random.randint(-1, 2)
+        bathrooms = max(1, bathrooms)
+        age = np.random.randint(0, 20)
+        
+        # معادلة تقريبية لحساب السعر بناءً على المنطقة والمواصفات
+        base_price_per_m2 = {
+            'North': 5500,
+            'Central': 5000,
+            'East': 3500,
+            'West': 3200,
+            'South': 2400
+        }[region]
+        
+        # إضافة تأثير العمر وعدد الغرف والتغير العشوائي
+        price_per_m2 = base_price_per_m2 * (1 - (age * 0.015))
+        price = int(area * price_per_m2 * (1 + (bedrooms * 0.03)) + np.random.normal(0, 50000))
+        price = max(200000, price)
+        
+        data.append({
+            'District': district,
+            'Region': region,
+            'Area_m2': area,
+            'Bedrooms': bedrooms,
+            'Bathrooms': bathrooms,
+            'Property_Age': age,
+            'Price_SAR': price
+        })
+        
+    df = pd.DataFrame(data)
+    return df
+
+# تشغيل وتوليد البيانات
+df_riyadh = generate_riyadh_real_estate_data(1000)
+df_riyadh.to_csv('riyadh_real_estate.csv', index=False)
+print(" تم إنشاء ملف البيانات riyadh_real_estate.csv بنجاح!")
+print(df_riyadh.head())
