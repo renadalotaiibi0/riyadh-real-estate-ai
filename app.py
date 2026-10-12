@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import joblib
 import os
+import streamlit.components.v1 as components
 
 st.set_page_config(
     page_title="Riyadh Real Estate Price Prediction & Investment Advisor",
@@ -10,7 +11,17 @@ st.set_page_config(
     layout="wide"
 )
 
-# Load Model and Data Safely (Fully bulletproof against CSV errors)
+# Force scroll to top on load
+components.html(
+    """
+    <script>
+        window.parent.document.querySelector('section.main').scrollTo(0, 0);
+    </script>
+    """,
+    height=0
+)
+
+# Load Model and Data Safely
 @st.cache_resource
 def load_model_and_data():
     csv_path = "riyadh_real_estate.csv"
@@ -25,7 +36,6 @@ def load_model_and_data():
             
     if os.path.exists(csv_path):
         try:
-            # Safe CSV loading with fallback engines to prevent parser errors
             df = pd.read_csv(csv_path, sep=None, engine='python', on_bad_lines='skip')
         except Exception:
             try:
@@ -63,7 +73,6 @@ district_prices = {
     "Al-Malaz": {"Land": (4275, 6460), "Villa": (3610, 4750), "Apartment": (2660, 3800), "Building": (3135, 4370)}
 }
 
-# Arabic Aliases Mapping
 arabic_to_district = {
     "حطين": "Hittin",
     "الملقا": "Al-Malqa", "ملقا": "Al-Malqa",
@@ -217,7 +226,6 @@ if user_query:
                 else:
                     llm_response = "*West Riyadh (Dharat Laban, Tuwaiq, Al-Mahdia):*\nOffers balanced residential choices with land prices from 2,945 to 5,225 SAR/m²."
             else:
-                # Specific District Matching
                 detected_district = district
                 for ar_name, eng_name in arabic_to_district.items():
                     if ar_name in user_query:
